@@ -3,17 +3,19 @@ FROM debian:bullseye
 RUN apt update && \
 	apt install -y --no-install-recommends nginx openssl
 
-COPY ./nginx/conf/inception_server.conf /etc/nginx/sites-available/
+COPY ./conf/server.conf /etc/nginx/sites-available/
 
-RUN ln -s /etc/nginx/sites-available/inception_server.conf /etc/nginx/sites-enabled/
+RUN ln -s /etc/nginx/sites-available/server.conf /etc/nginx/sites-enabled/
 
-COPY --chmod=700 ./nginx/tools/init_nginx.sh /root/
+COPY --chmod=700 ./tools/nginx.sh /root/
 
 EXPOSE 443
 
 WORKDIR /var/www/html
 
-COPY ./bonus/web/ /root/web
+# Si tu veux copier un site web, mets-le dans un dossier "web" ici :
+# srcs/requirements/nginx/web/
+# COPY ./web /root/web
 
-ENTRYPOINT [ "/root/init_nginx.sh" ]
+ENTRYPOINT [ "/root/nginx.sh" ]
 CMD [ "nginx", "-g", "daemon off;" ]
