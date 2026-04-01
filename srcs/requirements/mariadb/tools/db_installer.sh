@@ -1,15 +1,3 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    db_installer.sh                                    :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: mgarsaul <mgarsaul@student.42lehavre.fr>      +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2023/11/08 16:02:58 by mgarsaul          #+#    #+#              #
-#    Updated: 2024/02/16 11:38:03 by mgarsaul         ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
 #!/bin/sh
 
 # Assign the ownership of the directory to the MySQL user and group
