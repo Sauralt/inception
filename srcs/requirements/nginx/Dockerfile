@@ -1,21 +1,43 @@
-FROM debian:bullseye
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Dockerfile                                         :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: mgarsaul <mgarsaul@student.42lehavre.fr>      +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2023/11/08 16:30:39 by mgarsaul          #+#    #+#              #
+#    Updated: 2024/02/16 12:05:55 by mgarsaul         ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
 
-RUN apt update && \
-	apt install -y --no-install-recommends nginx openssl
+FROM alpine:3.17
 
-COPY ./conf/server.conf /etc/nginx/sites-available/
+# Updating and installing dependencies
+RUN apk update \
+ && apk add --no-cache nginx openssl
 
-RUN ln -s /etc/nginx/sites-available/server.conf /etc/nginx/sites-enabled/
+# Creating needed directories
+RUN mkdir -p /run/nginx /etc/nginx/ssl /var/www/html /tmp
 
-COPY --chmod=700 ./tools/nginx.sh /root/
+# Creating our certificate
+RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+	-keyout /etc/nginx/ssl/mgarsaul-selfsigned.key \
+	-out /etc/nginx/ssl/mgarsaul-selfsigned.crt \
+	-subj "/C=FR/ST=PACA/L=lehavre/O=42/OU=mgarsaul/CN=mgarsaul.42.fr"
 
+# Modifying permissions to be sure
+RUN chmod -R 755 /var/www/html
+
+# Copying our configuration
+COPY ./conf/nginx.conf /etc/nginx/nginx.conf
+COPY ./tools/index.html /var/www/html/index.html
+COPY ./tools/var_handler.sh /tmp/var_handler.sh
+
+# Handling port replacement
+RUN chmod +x /tmp/var_handler.sh
+
+# Allowing needed port
 EXPOSE 443
 
-WORKDIR /var/www/html
-
-# Si tu veux copier un site web, mets-le dans un dossier "web" ici :
-# srcs/requirements/nginx/web/
-# COPY ./web /root/web
-
-ENTRYPOINT [ "/root/nginx.sh" ]
-CMD [ "nginx", "-g", "daemon off;" ]
+# Running NGINX in background
+CMD ["sh", "/tmp/var_handler.sh"]

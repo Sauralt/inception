@@ -1,30 +1,22 @@
 # **************************************************************************** #
 #                                                                              #
 #                                                         :::      ::::::::    #
-#    Dockerfile                                         :+:      :+:    :+:    #
+#    var_handler.sh                                     :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
 #    By: mgarsaul <mgarsaul@student.42lehavre.fr>      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2023/11/08 16:03:03 by mgarsaul          #+#    #+#              #
-#    Updated: 2024/02/16 11:32:54 by mgarsaul         ###   ########.fr        #
+#    Created: 2024/02/16 11:46:37 by mgarsaul          #+#    #+#              #
+#    Updated: 2024/02/19 09:04:18 by mgarsaul         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-FROM alpine:3.16
+#!/bin/sh
 
-# Update and install packages
-RUN apk update \
-	&& apk add --no-cache \
-		mariadb \
-		mariadb-client
+# Replacing ports from env
+sed -i "s/REPLACE_UTK_PORT/$UTK_PORT/g" /etc/nginx/nginx.conf
+sed -i "s/REPLACE_SW_PORT/$SW_PORT/g" /etc/nginx/nginx.conf
+sed -i "s/REPLACE_ADM_PORT/$ADM_PORT/g" /etc/nginx/nginx.conf
+sed -i "s/REPLACE_WP_PORT/$WP_PORT/g" /etc/nginx/nginx.conf
 
-# Copy files
-COPY ./tools/db_installer.sh /tmp/db_installer.sh
-COPY ./conf/my.cnf /etc/mysql/my.cnf
-RUN chmod +x /tmp/db_installer.sh
-
-# Expose ports
-EXPOSE 3306
-
-# Run script
-CMD ["sh", "/tmp/db_installer.sh"]
+# Start Nginx in the foreground
+nginx -g "daemon off;"

@@ -1,22 +1,32 @@
-FROM debian:bullseye
+FROM alpine:3.16
 
-RUN apt update && \
-    apt install -y --no-install-recommends php-fpm curl ca-certificates php-mysqli php-json php-redis
+# Update and install PHP8
+RUN apk update && apk upgrade \
+	&& apk add --no-cache \
+		curl \
+		wget \
+		php8 \
+		php8-fpm \
+		php8-mysqli \
+		php8-phar \
+		php8-iconv \
+		mariadb-client
 
-RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
-    chmod +x wp-cli.phar && \
-    mv wp-cli.phar /usr/local/bin/wp
+RUN mkdir -p /var/www/html && mkdir -p /run/php && mkdir -p /var/log/php82
+RUN adduser -S nginx && addgroup -S nginx
 
-RUN mkdir -p /run/php && \
-    chmod 777 /run/php
+# Copying installer and configurations
+COPY ./conf/www.conf /etc/php8/php-fpm.d/www.conf
+COPY ./tools/wp_installer.sh /tmp/wp_installer.sh
 
-COPY ./conf/pool.conf /etc/php/7.4/fpm/pool.d/inception.conf
+# Making installer executable
+RUN chmod +x /tmp/wp_installer.sh
 
-COPY --chmod=700 ./tools/wordpress.sh /root/wordpress.sh
-
-WORKDIR /var/www/html
-
+# Exposing Wordpress port
 EXPOSE 9000
 
-ENTRYPOINT [ "/root/wordpress.sh" ]
-CMD [ "php-fpm7.4", "-F" ]
+# Working directory
+WORKDIR /var/www/html
+
+# Running Wordpress installer script
+ENTRYPOINT ["sh", "/tmp/wp_installer.sh"]
